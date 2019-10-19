@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
+// Still not being used for the test
 
 
-
-// We then need to export all of the methods that will be part of the lists model

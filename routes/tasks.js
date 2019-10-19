@@ -1,26 +1,48 @@
 const express = require('express');
+const {Tasks} = require('../models/tasks.model');
 const router = express.Router();
 
-const tasks = [
-	{title:'Test', description:'This is a pointless object for a list'}
-]
+// const tasks = [
+// 	{title:'Test', description:'This is a pointless object for a list'}
+// ]
 router.use(express.json());
 
-router.post('/', (req, res) => {
+
+router.get('/', async (req, res) => {
+	let tasks = await Tasks.find();
+
+	res.send(tasks);
+});
+
+
+router.get('/:id', async (req, res) => {
+	console.log('Retrieving the user with id: ', req.body.id);
+	let task = await Tasks.findById(req.params.id);
+	
+	res.send(task);
+});
+
+router.post('/', async (req, res) => {
 	console.log('Receiving post message req', req);
-	const task = {
-		id: tasks.length + 1,
+	let task = new Tasks({
 		title: req.body.title,
 		description: req.body.description
-	}
+	});
 
-	tasks.push(task);
-	res.send(task);
-})
+	let result = await task.save()
+	res.send(result);
+});
 
-router.get('/:id', (req, res) => {
-	console.log('Retrieving the user with id: ', req.body.id);
+router.delete('/:id', async (req, res) => {
 	
-})
+	let {id} = req.params;
+	console.log("Receiving request to delete: ", id);
+
+	let result = await Tasks.findByIdAndDelete({_id: id});
+
+	console.log(result);
+	res.send(result);
+});
+
 
 module.exports = router;

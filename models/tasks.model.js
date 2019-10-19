@@ -8,4 +8,7 @@ const tasksSchema = new mongoose.Schema({
 
 });
 
-// We then need to export all of the methods that will be part of the tasks model
+const Task = new mongoose.model('Task', tasksSchema);
+
+exports.Tasks = Task;
+

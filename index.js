@@ -1,6 +1,6 @@
 const express = require('express');
 const tasks = require('./routes/tasks');
-const mongoose = requir('mongoose');
+const mongoose = require('mongoose');
 const app = express();
 const PORT = 3000;
 
@@ -10,10 +10,13 @@ const PORT = 3000;
 
 */
 
-app.use('api/tasks', tasks);
+mongoose.connect('mongodb://localhost/smashingbackends')
+	.then(console.log('Connected to our database... '));
+
+app.use('/api/tasks', tasks);
 
 app.get('/', (req, res) => {
-	res.send('Bienvenidos al Bori Task List');
+	res.send('Welcome to Smashing Backends, where we`ll be smashing this backend test.');
 })
 
 app.listen(PORT, () =>{
