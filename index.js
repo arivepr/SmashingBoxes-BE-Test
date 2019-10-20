@@ -10,7 +10,11 @@ const PORT = 3000;
 
 */
 
-mongoose.connect('mongodb://localhost/smashingbackends')
+mongoose.connect('mongodb://localhost/smashingbackends', {
+	useFindAndModify: false,
+	useUnifiedTopology: true,
+	useNewUrlParser: true
+})
 	.then(console.log('Connected to our database... '));
 
 app.use('/api/tasks', tasks);

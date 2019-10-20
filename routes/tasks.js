@@ -23,10 +23,11 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-	console.log('Receiving post message req', req);
+	let {title, description} = req.body;
+
 	let task = new Tasks({
-		title: req.body.title,
-		description: req.body.description
+		title: title,
+		description: description
 	});
 
 	let result = await task.save()
@@ -42,6 +43,17 @@ router.delete('/:id', async (req, res) => {
 
 	console.log(result);
 	res.send(result);
+});
+
+router.put('/:id/toggle_completion', async (req, res) => {
+	let {status} = req.body; // We could also consider the call itself triggering status: !currentStatus as an alternative to this logic
+	let {id} = req.params;
+
+	let task = await Tasks.findByIdAndUpdate({_id: id}, {$set: {status: status}}, {new: true});
+	console.log("Our task is: ", task);
+
+	res.send(task);
+
 });
 
 
