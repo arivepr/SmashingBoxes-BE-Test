@@ -48,13 +48,18 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id/toggle_completion', async (req, res) => {
 	let {status} = req.body; // We could also consider the call itself triggering status: !currentStatus as an alternative to this logic
 	let {id} = req.params;
-
-	let task = await Tasks.findByIdAndUpdate({_id: id}, {$set: {status: status}}, {new: true});
-	console.log("Our task is: ", task);
-
-	res.send(task);
-
+	
+	// If the task is being cancelled and the user is editing it, nullify the previous completed_at value
+	if(status){
+		let task = await Tasks.findByIdAndUpdate({_id: id}, {$set: {status: status, completed_at:Date.now()}}, {new: true});
+		res.send(task);
+	}
+	else {
+		let task = await Tasks.findByIdAndUpdate({_id: id}, {$set: {status: status, completed_at:""}}, {new: true});
+		res.send(task);
+	}
 });
+
 
 
 module.exports = router;
