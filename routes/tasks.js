@@ -2,14 +2,11 @@ const express = require('express');
 const {Tasks} = require('../models/tasks.model');
 const router = express.Router();
 
-// const tasks = [
-// 	{title:'Test', description:'This is a pointless object for a list'}
-// ]
 router.use(express.json());
 
 
 router.get('/', async (req, res) => {
-	let tasks = await Tasks.find();
+	let tasks = await Tasks.find().populate('list');
 
 	res.send(tasks);
 });
@@ -30,8 +27,26 @@ router.post('/', async (req, res) => {
 		description: description
 	});
 
-	let result = await task.save()
+	let result = await task.save().then(result => {
+		console.log(result);
+	})
+	// let proce
+
 	res.send(result);
+});
+
+// Post with required list behavior //
+router.post('/', async (req, res) => {
+	let {title, description} = req.body;
+
+	let task = new Tasks({
+		title: title,
+		description: description
+	});
+
+	let result = await task.save();
+
+	console.log('This is our result from posting: ', result);
 });
 
 router.delete('/:id', async (req, res) => {
@@ -51,15 +66,22 @@ router.put('/:id/toggle_completion', async (req, res) => {
 	
 	// If the task is being cancelled and the user is editing it, nullify the previous completed_at value
 	if(status){
-		let task = await Tasks.findByIdAndUpdate({_id: id}, {$set: {status: status, completed_at:Date.now()}}, {new: true});
+		let task = await Tasks.findByIdAndUpdate(
+			{_id: id}, 
+			{$set: {status: status, completed_at:Date.now()}},
+			{new: true}
+		);
 		res.send(task);
 	}
 	else {
-		let task = await Tasks.findByIdAndUpdate({_id: id}, {$set: {status: status, completed_at:""}}, {new: true});
+		let task = await Tasks.findByIdAndUpdate(
+			{_id: id}, 
+			{$set: {status: status, completed_at:""}}, 
+			{new: true}
+		);
 		res.send(task);
 	}
 });
-
 
 
 module.exports = router;
