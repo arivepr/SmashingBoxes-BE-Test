@@ -24,13 +24,22 @@ router.post('/', async (req, res) => {
 
 router.get('/', async(req, res) => {
     let lists = await List.find();
+    let incompleteCount = 0;
 
     for (let list of lists){
         let tasks = await Tasks.find({list: list._id});
         
         for(let task of tasks){
             let {_id} = task;
+            console.log("This is our task" , task);
+            incompleteCount += task.status ? 0 : 1; // If its completed, don't sum anything
+
             let subtasks = await Subtask.find({parent_task: _id});
+
+            for(let subtask of subtasks){
+                incompleteCount += subtask.status ? 0 : 1;
+            }
+
             task.subtasks.push(...subtasks);
         }
         
@@ -42,7 +51,12 @@ router.get('/', async(req, res) => {
 
     }
 
-    res.send(lists);    
+    let completedQuery = {
+        lists,
+        incompleteCount
+    }
+
+    res.send(completedQuery);    
 });
 
 
@@ -70,28 +84,21 @@ router.put('/:id/toggle_completion', async(req, res) => {
     const {status} = req.body;
 
     try {
-
         let list = await List.findById(id);
-        let tasks = await Tasks.find({
-            list: id
-        });
+        let tasks = await Tasks.find({list: id});
 
         list.status = status;
         list.completed_at = status ? Date.now() : null; // If our list is complete, give it a timestamp, otherwise it's nullified
         list = await list.save(); // We save the list before pushing the tasks to avoid saving child references to the parent document
 
         for (let task of tasks) {
-            let {
-                _id
-            } = task;
+            let {_id} = task;
+            let subtasks = await Subtask.find({parent_task: _id});
+
             task.status = status;
             task.completed_at = status ? Date.now() : null; // If our task is complete, timestamp it, otherwise nullify it. 
             task = await task.save(); // We save the data of each individual task
             list.tasks.push(task);
-
-            let subtasks = await Subtask.find({
-                parent_task: _id
-            });
 
             for (let subtask of subtasks) {
                 subtask.status = status;
@@ -102,7 +109,7 @@ router.put('/:id/toggle_completion', async(req, res) => {
         }
 
         res.send(list);
-        
+
     } catch (error) {
         res.send(error);
     }
@@ -146,8 +153,10 @@ router.delete('/:id', async(req, res) => {
     } catch (error) {
         res.send(error);
     }
-    
-
 });
+
+// async function countIncompleteTasks() {
+
+// }
 
 module.exports = router;
