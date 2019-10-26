@@ -16,10 +16,10 @@ const tasksSchema = new mongoose.Schema({
         ref:'List',
         default: '112233445566778899000102' // Referencing back to default user task list
         /* 
-            NOTES ON THIS APPROACH: Admittedly a rather hackathon-ish move, but serves the purpose of this test perfectly,
+            NOTES ON THIS APPROACH: Admittedly a rather hackathon-ish move(due to hardcoding the id), but serves the purpose of this test perfectly,
             as we're referencing to a default user-list, if the task is not being added through a list initially. With more
-            time this could have been cleaned up with a bootstrap method that could create a unique id for the default list,
-            and populate it here, instead of a hardcoded one on both places. Could also eliminate the ability to post a task
+            time this could have been cleaned up with a bootstrap method that could create a unique id for the default list, and or design around the user
+            choosing their own default task-list and populate it here, instead of a hardcoded one on both places. Could also eliminate the ability to post a task
             directly through this end-point altogether, and only through  a list. Much options, such little time.   
         */
     }

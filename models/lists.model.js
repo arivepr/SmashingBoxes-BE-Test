@@ -8,7 +8,7 @@ const ListSchema = mongoose.Schema({
         default: false
     },
     completed_at: {
-        type: Boolean, 
+        type: Date, 
         default:null
     },
     tasks: [{

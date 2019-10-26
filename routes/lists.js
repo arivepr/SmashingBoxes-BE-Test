@@ -46,6 +46,27 @@ router.get('/:id', async(req, res) => {
     
 });
 
+router.put('/:id/toggle_completion', async(req, res) => {
+    const {id} = req.params;
+    const {status} = req.body;
+
+    let list = await List.findById(id);
+    let tasks = await Tasks.find({list: id});
+
+    list.status = status;
+    status ? list.completed_at = Date.now() : null; // If our list is complete, give it a timestamp, otherwise it's nullified
+    list = await list.save(); // We save the list before pushing the tasks to avoid saving child references to the parent document
+
+    for(let task of tasks){
+        task.status = status;
+        status ? task.completed_at = Date.now() : null; // If our task is complete, timestamp it, otherwise nullify it. 
+        task = await task.save(); // We save the data of each individual task
+        list.tasks.push(task);
+    }
+
+    res.send(list);
+});
+
 router.delete('/:id', async(req, res) => {
     const {id} = req.params;
     console.log('Receiving request to delete: \n', id);
