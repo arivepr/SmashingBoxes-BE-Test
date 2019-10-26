@@ -1,6 +1,8 @@
 const express = require('express');
 const {List} = require('../models/lists.model');
 const {Tasks} = require('../models/tasks.model');
+const {Subtask} = require('../models/subtasks.model');
+
 const router =  express.Router();
 
 router.use(express.json());
@@ -74,20 +76,40 @@ router.put('/:id/toggle_completion', async(req, res) => {
 
 router.delete('/:id', async(req, res) => {
     const {id} = req.params;
+    let subtasks ={}; // empty object for now
     console.log('Receiving request to delete: \n', id);
 
-    let result = await Tasks.findByIdAndDelete({
-        _id: id
-    });
+    try {
+        let list = await List.findByIdAndDelete({ // We find the top-most doc
+            _id: id
+        });
 
-    let tasks = await Tasks.deleteMany({list:id});
-    console.log(`Deleting tasks insid of list ${id}\n`, tasks);
+        let tasks = await Tasks.deleteMany({ // Find the tasks it contains
+            list: id
+        });
 
-    let completeDelete = {
-        list: result,
-        tasks: tasks
+        for (let task of tasks) { // Iterate over the tasks, and delete all of their individual subtasks
+            let {
+                _id
+            } = task
+            subtasks = await Subtask.deleteMany({
+                parent_task: _id
+            });
+        }
+
+        console.log(`Deleting tasks inside of list ${id}\n`, tasks);
+
+        let completeDelete = { // Send the full deleted object back to the user
+            list,
+            tasks,
+            subtasks
+        }
+        
+        res.send(completeDelete);
+    } catch (error) {
+        res.send(error);
     }
-    res.send(completeDelete);
+    
 
 });
 

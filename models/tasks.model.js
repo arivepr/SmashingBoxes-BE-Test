@@ -22,7 +22,8 @@ const tasksSchema = new mongoose.Schema({
             choosing their own default task-list and populate it here, instead of a hardcoded one on both places. Could also eliminate the ability to post a task
             directly through this end-point altogether, and only through  a list. Much options, such little time.   
         */
-    }
+    },
+    subtasks: []
 
 });
 

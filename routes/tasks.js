@@ -1,14 +1,26 @@
 const express = require('express');
 const {Tasks} = require('../models/tasks.model');
+const {Subtask} = require('../models/subtasks.model');
 const router = express.Router();
 
 router.use(express.json());
 
 
 router.get('/', async (req, res) => {
-	let tasks = await Tasks.find().populate('list');
+	
+	try {
+		let tasks = await Tasks.find().populate('list');
+		for(task of tasks){
+			let {_id} = task;
+			let subtasks = await Subtask.find({parent_task: _id});
+			
+			task.subtasks.push(...subtasks);
+		}
+		res.send(tasks)
+	} catch (error) {
+		res.send(error);
+	}
 
-	res.send(tasks);
 });
 
 
@@ -21,20 +33,19 @@ router.get('/:id', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-	let {title, description} = req.body;
+	let {title, description, list} = req.body;
 
 	let task = new Tasks({
-		title: title,
-		description: description
+		title,
+		description,
+		list
 	});
 
-	let result = await task.save().then(result => {
-		console.log(result);
-	})
-	// let proce
+	let result = await task.save();
 
 	res.send(result);
 });
+
 
 // Post with required list behavior //
 router.post('/', async (req, res) => {
@@ -52,7 +63,7 @@ router.post('/', async (req, res) => {
 
 
 router.delete('/:id', async (req, res) => {
-	let {id} = req.params;
+	const {id} = req.params;
 	console.log("Receiving request to delete: ", id);
 
 	let result = await Tasks.findByIdAndDelete({_id: id});
@@ -63,26 +74,35 @@ router.delete('/:id', async (req, res) => {
 
 
 router.put('/:id/toggle_completion', async (req, res) => {
-	let {status} = req.body; // We could also consider the call itself triggering status: !currentStatus as an alternative to this logic
-	let {id} = req.params;
+	const {status} = req.body; // We could also consider the call itself triggering status: !currentStatus as an alternative to this logic
+	const {id} = req.params;
 	
-	// If the task is being cancelled and the user is editing it, nullify the previous completed_at value
-	if(status){
-		let task = await Tasks.findByIdAndUpdate(
-			{_id: id}, 
-			{$set: {status: status, completed_at:Date.now()}},
-			{new: true}
-		);
-		res.send(task);
+	try {
+		// If the task is being cancelled and the user is editing it, nullify the previous completed_at value
+		let task = await Tasks.findById(id);
+		let subtasks = await Subtask.find({
+			parent_task: id
+		});
+
+		task.status = status;
+		task.completed_at = status ? Date.now() : null;
+
+		for (let subtask of subtasks) {
+			subtask.status = status;
+			subtask.completed_at = status ? Date.now() : null;
+			subtask.save();
+		}
+
+		let completedQuery = {
+			task,
+			subtasks
+		}
+
+		res.send(completedQuery);
+	} catch (error) {
+		res.send(error);
 	}
-	else {
-		let task = await Tasks.findByIdAndUpdate(
-			{_id: id}, 
-			{$set: {status: status, completed_at:""}}, 
-			{new: true}
-		);
-		res.send(task);
-	}
+	
 });
 
 
