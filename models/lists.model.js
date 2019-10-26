@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const {Task} = require('../models/tasks.model');
 
+
 const ListSchema = mongoose.Schema({
     title: String,
     status: {
@@ -16,6 +17,7 @@ const ListSchema = mongoose.Schema({
         ref: 'Task'
     }],
 });
+
 
 const List = new mongoose.model('List', ListSchema);
 

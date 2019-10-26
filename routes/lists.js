@@ -5,6 +5,7 @@ const router =  express.Router();
 
 router.use(express.json());
 
+
 router.post('/', async (req, res) => {
     let {title: listTitle} = req.body;
 
@@ -17,6 +18,7 @@ router.post('/', async (req, res) => {
     res.send(result);
 
 });
+
 
 router.get('/', async(req, res) => {
     let lists = await List.find();
@@ -34,6 +36,7 @@ router.get('/', async(req, res) => {
     res.send(lists);    
 });
 
+
 router.get('/:id', async(req, res) => {
     const {id} = req.params;
 
@@ -46,6 +49,7 @@ router.get('/:id', async(req, res) => {
     
 });
 
+
 router.put('/:id/toggle_completion', async(req, res) => {
     const {id} = req.params;
     const {status} = req.body;
@@ -54,18 +58,19 @@ router.put('/:id/toggle_completion', async(req, res) => {
     let tasks = await Tasks.find({list: id});
 
     list.status = status;
-    status ? list.completed_at = Date.now() : null; // If our list is complete, give it a timestamp, otherwise it's nullified
+    list.completed_at = status ? Date.now() : null; // If our list is complete, give it a timestamp, otherwise it's nullified
     list = await list.save(); // We save the list before pushing the tasks to avoid saving child references to the parent document
 
     for(let task of tasks){
         task.status = status;
-        status ? task.completed_at = Date.now() : null; // If our task is complete, timestamp it, otherwise nullify it. 
+        task.completed_at = status ? Date.now() : null; // If our task is complete, timestamp it, otherwise nullify it. 
         task = await task.save(); // We save the data of each individual task
         list.tasks.push(task);
     }
 
     res.send(list);
 });
+
 
 router.delete('/:id', async(req, res) => {
     const {id} = req.params;

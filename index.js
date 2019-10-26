@@ -1,7 +1,7 @@
 const tasks = require('./routes/tasks');
 const lists = require('./routes/lists');
+const subtasks = require('./routes/subtasks');
 const {_initiateDefaultList} = require('./models/lists.model');
-
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
@@ -25,6 +25,7 @@ mongoose.connect('mongodb://localhost/smashingbackends', {
 
 app.use('/api/tasks', tasks);
 app.use('/api/lists', lists);
+app.use('/api/subtasks', subtasks);
 
 
 app.get('/', (req, res) => {
