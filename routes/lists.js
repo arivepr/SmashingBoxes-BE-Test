@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
 
 router.get('/', async(req, res) => {
     let lists = await List.find();
-    let incompleteCount = 0;
+    let incomplete_count = 0;
 
     for (let list of lists){
         let tasks = await Tasks.find({list: list._id});
@@ -32,12 +32,12 @@ router.get('/', async(req, res) => {
         for(let task of tasks){
             let {_id} = task;
             console.log("This is our task" , task);
-            incompleteCount += task.status ? 0 : 1; // If its completed, don't sum anything
+            incomplete_count += task.status ? 0 : 1; // If its completed, don't sum anything
 
             let subtasks = await Subtask.find({parent_task: _id});
 
             for(let subtask of subtasks){
-                incompleteCount += subtask.status ? 0 : 1;
+                incomplete_count += subtask.status ? 0 : 1;
             }
 
             task.subtasks.push(...subtasks);
@@ -53,7 +53,7 @@ router.get('/', async(req, res) => {
 
     let completedQuery = {
         lists,
-        incompleteCount
+        incomplete_count
     }
 
     res.send(completedQuery);    
