@@ -41,9 +41,9 @@ router.post('/', async (req, res) => {
 		list
 	});
 
-	let result = await task.save();
+	await task.save();
 
-	res.send(result);
+	res.send(task);
 });
 
 
